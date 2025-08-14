@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FakeShop Store - Full CRUD</title>
+  <style>
+    /* Reset and base styles */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      color: #222;
+      padding: 2rem;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 3rem;
+      color: #007BFF;
+      text-align: center;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    hr {
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 2rem;
+      border: none;
+      border-top: 1px solid #ccc;
+    }
+
+    #products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1200px;
+      min-height: 300px;
+      position: relative;
+    }
+
+    /* Loading spinner container */
+    #products.loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 4px solid #ddd;
+      border-top: 4px solid #007BFF;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .product {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+      height: 100%;
+      position: relative;
+    }
+
+    .product:hover,
+    .product:focus-visible {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 25px rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+
+    .product img {
+      max-width: 140px;
+      max-height: 140px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+      border-radius: 8px;
+    }
+
+    .product:hover img {
+      transform: scale(1.05);
+    }
+
+    .product h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      text-align: center;
+      color: #111;
+      flex-grow: 1;
+    }
+
+    .product p.price {
+      font-weight: 700;
+      color: #007BFF;
+      font-size: 1.15rem;
+      margin: 0 0.5rem 1rem;
+    }
+
+    /* Buttons container */
+    .product .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Buttons */
+    button {
+      font-size: 0.85rem;
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;    }
+
+    button.edit {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    button.edit:hover {
+      background-color: #e0a800;
+    }
+
+    button.delete {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    button.delete:hover {
+      background-color: #b02a37;
+    }
+
+    /* Create / Edit form styles */
+    #product-form-container {
+      background: white;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+      padding: 1rem 2rem 2rem;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    #product-form-container h2 {
+      margin-top: 0;
+      color: #007BFF;
+    }
+
+    form#product-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      display: block;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+
+    button#submit-btn {
+      background-color: #007BFF;
+      color: white;
+      font-weight: 700;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button#submit-btn:hover {
+      background-color: #0056b3;
+    }
+
+    button#cancel-btn {
+      background-color: #6c757d;
+      color: white;
+      font-weight: 700;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-left: 1rem;
+    }
+
+    button#cancel-btn:hover {
+      background-color: #5a6268;
+    }
+
+    /* Error message style */
+    #form-error {
+      color: #d9534f;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-top: -0.8rem;
+      margin-bottom: 0.8rem;
+      min-height: 1.4em;
+    }
+
+    /* Responsive */
+    @media (max-width: 400px) {
+      #products {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+
+      .product img {
+        max-width: 100px;
+        max-height: 100px;
+        margin-bottom: 0.8rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>FakeShop Products</h1>
+  <hr />
+
+  <div id="product-form-container">
+    <h2 id="form-title">Add New Product</h2>
+    <form id="product-form" aria-label="Product form">
+      <div>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required />
+      </div>
+      <div>
+        <label for="price">Price (USD):</label>
+        <input type="number" id="price" name="price" step="0.01" min="0" required />
+      </div>
+      <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+      </div>
+      <div>
+        <label for="image">Image URL:</label>
+        <input type="text" id="image" name="image" required />
+      </div>
+      <div>
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required />
+      </div>
+      <div style="display: flex; align-items: center; margin-top: 1rem;">
+        <button type="submit" id="submit-btn">Add Product</button>
+        <button type="button" id="cancel-btn" style="display:none;">Cancel</button>
+      </div>
+      <div id="form-error" role="alert" aria-live="assertive"></div>
+    </form>
+  </div>
+
+  <div id="products" class="loading" aria-live="polite" aria-busy="true">
+    <div class="spinner" role="status" aria-label="Loading products"></div>
+  </div>
+
+  <script>
+    const productsContainer = document.getElementById('products');
+    const form = document.getElementById('product-form');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const formError = document.getElementById('form-error');
+
+    let products = [];
+    let editingProductId = null;
+
+    // Utility: Save products to localStorage
+    function saveProductsToLocal() {
+      localStorage.setItem('fakeShopProducts', JSON.stringify(products));
+    }
+
+    // Utility: Load products from localStorage
+    function loadProductsFromLocal() {
+      const stored = localStorage.getItem('fakeShopProducts');
+      return stored ? JSON.parse(stored) : null;
+    }
+
+    function generateNewId() {
+      return products.length
+        ? Math.max(...products.map(p => p.id)) + 1
+        : 1;
+    }
+
+    async function fetchProducts() {
+      productsContainer.classList.add('loading');
+      productsContainer.innerHTML = `<div class="spinner" role="status" aria-label="Loading products"></div>`;
+      productsContainer.setAttribute('aria-busy', 'true');
+
+      const localProducts = loadProductsFromLocal();
+      if (localProducts && localProducts.length) {
+        products = localProducts;
+        renderProducts();
+        productsContainer.classList.remove('loading');
+        productsContainer.removeAttribute('aria-busy');
+        return;
+      }
+
+      try {
+        const res = await fetch('https://fakestoreapi.com/products');
+        if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+        products = await res.json();
+        saveProductsToLocal(); 
+        renderProducts();
+      } catch (error) {
+        productsContainer.classList.add('error');
+        productsContainer.innerHTML = 'Failed to load products. Please try again later.';
+        console.error(error);
+      } finally {
+        productsContainer.classList.remove('loading');
+        productsContainer.removeAttribute('aria-busy');
+      }
+    }
+
+    function renderProducts() {
+      if (!products.length) {
+        productsContainer.innerHTML = '<p>No products found.</p>';
+        return;
+      }
+      productsContainer.innerHTML = '';
+      products.forEach(product => {
+        const prod = document.createElement('article');
+        prod.className = 'product';
+        prod.tabIndex = 0;
+        prod.innerHTML = `
+          <img src="${product.image}" alt="Image of ${product.title}" loading="lazy" width="140" height="140" />
+          <h3>${product.title}</h3>
+          <p class="price">$${product.price.toFixed(2)}</p>
+          <p>${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</p>
+          <div class="actions">
+            <button class="edit" aria-label="Edit ${product.title}">Edit</button>
+            <button class="delete" aria-label="Delete ${product.title}">Delete</button>
+          </div>
+        `;
+
+        const editBtn = prod.querySelector('.edit');
+        editBtn.addEventListener('click', () => startEditProduct(product));
+
+        const deleteBtn = prod.querySelector('.delete');
+        deleteBtn.addEventListener('click', () => deleteProduct(product.id));
+
+        productsContainer.appendChild(prod);
+      });
+    }
+
+    // CREATE or UPDATE on form submit
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      formError.textContent = '';
+
+      const productData = {
+        title: form.title.value.trim(),
+        price: parseFloat(form.price.value),
+        description: form.description.value.trim(),
+        image: form.image.value.trim(),
+        category: form.category.value.trim(),
+      };
+
+      if (
+        !productData.title ||
+        isNaN(productData.price) ||
+        !productData.description ||
+        !productData.image ||
+        !productData.category
+      ) {
+        formError.textContent = 'Please fill in all fields correctly.';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = editingProductId ? 'Updating...' : 'Adding...';
+
+
+      if (editingProductId) {
+
+        products = products.map(p => (p.id === editingProductId ? { id: editingProductId, ...productData } : p));
+      } else {
+        const newId = generateNewId();
+        products.push({ id: newId, ...productData });
+      }
+
+      saveProductsToLocal();
+      renderProducts();
+      resetForm();
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Product';
+    });
+
+    function startEditProduct(product) {
+      editingProductId = product.id;
+      formTitle.textContent = `Edit Product: ${product.title}`;
+      submitBtn.textContent = 'Update Product';
+      cancelBtn.style.display = 'inline-block';
+
+      form.title.value = product.title;
+      form.price.value = product.price;
+      form.description.value = product.description;
+      form.image.value = product.image;
+      form.category.value = product.category;
+      formError.textContent = '';
+      form.title.focus();
+    }
+
+    cancelBtn.addEventListener('click', () => {
+      resetForm();
+    });
+
+    function resetForm() {
+      editingProductId = null;
+      form.reset();
+      formTitle.textContent = 'Add New Product';
+      submitBtn.textContent = 'Add Product';
+      cancelBtn.style.display = 'none';
+      formError.textContent = '';
+    }
+
+    function deleteProduct(id) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+
+      products = products.filter(p => p.id !== id);
+      saveProductsToLocal();
+      renderProducts();
+
+      if (editingProductId === id) resetForm();
+    }
+
+    // Initial load
+    fetchProducts();
+  </script>
+</body>
+
+</html>
