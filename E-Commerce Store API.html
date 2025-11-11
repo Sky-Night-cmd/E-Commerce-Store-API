@@ -4,12 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FakeShop Store - Full CRUD</title>
+  <title>FakeShop Store</title>
   <style>
-    /* Reset and base styles */
-    *,
-    *::before,
-    *::after {
+    * {
       box-sizing: border-box;
     }
 
@@ -32,7 +29,6 @@
       text-align: center;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
       margin-bottom: 1.5rem;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     hr {
@@ -50,17 +46,14 @@
       width: 100%;
       max-width: 1200px;
       min-height: 300px;
-      position: relative;
     }
 
-    /* Loading spinner container */
     #products.loading {
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* Spinner */
     .spinner {
       border: 4px solid #ddd;
       border-top: 4px solid #007BFF;
@@ -87,14 +80,11 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: default;
       height: 100%;
-      position: relative;
     }
 
-    .product:hover,
-    .product:focus-visible {
+    .product:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 25px rgba(0, 123, 255, 0.25);
-      outline: none;
     }
 
     .product img {
@@ -126,20 +116,19 @@
       margin: 0 0.5rem 1rem;
     }
 
-    /* Buttons container */
     .product .actions {
       display: flex;
       gap: 0.5rem;
     }
 
-    /* Buttons */
     button {
       font-size: 0.85rem;
       padding: 0.3rem 0.6rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s ease;    }
+      transition: background-color 0.3s ease;
+    }
 
     button.edit {
       background-color: #ffc107;
@@ -159,7 +148,6 @@
       background-color: #b02a37;
     }
 
-    /* Create / Edit form styles */
     #product-form-container {
       background: white;
       box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
@@ -189,7 +177,8 @@
 
     input[type="text"],
     input[type="number"],
-    textarea {
+    textarea,
+    input[type="file"] {
       padding: 0.5rem;
       font-size: 1rem;
       border-radius: 6px;
@@ -203,15 +192,19 @@
       min-height: 60px;
     }
 
-    button#submit-btn {
-      background-color: #007BFF;
-      color: white;
-      font-weight: 700;
-      padding: 0.7rem;
+    button#submit-btn,
+    button#cancel-btn {
+      padding: 0.7rem 1.2rem;
       border-radius: 8px;
+      font-weight: 700;
       border: none;
       cursor: pointer;
       transition: background-color 0.3s ease;
+    }
+
+    button#submit-btn {
+      background-color: #007BFF;
+      color: white;
     }
 
     button#submit-btn:hover {
@@ -221,55 +214,30 @@
     button#cancel-btn {
       background-color: #6c757d;
       color: white;
-      font-weight: 700;
-      padding: 0.7rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
       margin-left: 1rem;
+      display: none;
     }
 
     button#cancel-btn:hover {
       background-color: #5a6268;
     }
 
-    /* Error message style */
     #form-error {
       color: #d9534f;
       font-weight: 600;
       font-size: 1rem;
-      margin-top: -0.8rem;
-      margin-bottom: 0.8rem;
       min-height: 1.4em;
-    }
-
-    /* Responsive */
-    @media (max-width: 400px) {
-      #products {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      }
-
-      .product img {
-        max-width: 100px;
-        max-height: 100px;
-        margin-bottom: 0.8rem;
-      }
-
-      h1 {
-        font-size: 1.8rem;
-      }
     }
   </style>
 </head>
 
 <body>
   <h1>FakeShop Products</h1>
-  <hr />
+  <hr>
 
   <div id="product-form-container">
     <h2 id="form-title">Add New Product</h2>
-    <form id="product-form" aria-label="Product form">
+    <form id="product-form">
       <div>
         <label for="title">Title:</label>
         <input type="text" id="title" name="title" required />
@@ -282,24 +250,30 @@
         <label for="description">Description:</label>
         <textarea id="description" name="description" required></textarea>
       </div>
+
       <div>
         <label for="image">Image URL:</label>
-        <input type="text" id="image" name="image" required />
+        <input type="text" id="image" name="image" placeholder="Paste image URL" />
+
+        <label for="imageFile" style="margin-top: 0.5rem;">OR Upload Image File:</label>
+        <input type="file" id="imageFile" name="imageFile" accept="image/*" />
       </div>
+
       <div>
         <label for="category">Category:</label>
         <input type="text" id="category" name="category" required />
       </div>
+
       <div style="display: flex; align-items: center; margin-top: 1rem;">
         <button type="submit" id="submit-btn">Add Product</button>
-        <button type="button" id="cancel-btn" style="display:none;">Cancel</button>
+        <button type="button" id="cancel-btn">Cancel</button>
       </div>
-      <div id="form-error" role="alert" aria-live="assertive"></div>
+      <div id="form-error"></div>
     </form>
   </div>
 
-  <div id="products" class="loading" aria-live="polite" aria-busy="true">
-    <div class="spinner" role="status" aria-label="Loading products"></div>
+  <div id="products" class="loading">
+    <div class="spinner"></div>
   </div>
 
   <script>
@@ -310,53 +284,64 @@
     const cancelBtn = document.getElementById('cancel-btn');
     const formError = document.getElementById('form-error');
 
+    const imageUrlInput = document.getElementById('image');
+    const imageFileInput = document.getElementById('imageFile');
+
     let products = [];
     let editingProductId = null;
 
-    // Utility: Save products to localStorage
+    imageUrlInput.addEventListener('input', () => {
+      imageFileInput.disabled = imageUrlInput.value.trim() !== '';
+    });
+
+    imageFileInput.addEventListener('change', () => {
+      imageUrlInput.disabled = imageFileInput.files.length > 0;
+    });
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     function saveProductsToLocal() {
       localStorage.setItem('fakeShopProducts', JSON.stringify(products));
     }
 
-    // Utility: Load products from localStorage
     function loadProductsFromLocal() {
       const stored = localStorage.getItem('fakeShopProducts');
       return stored ? JSON.parse(stored) : null;
     }
 
     function generateNewId() {
-      return products.length
-        ? Math.max(...products.map(p => p.id)) + 1
-        : 1;
+      return products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
     }
 
     async function fetchProducts() {
       productsContainer.classList.add('loading');
-      productsContainer.innerHTML = `<div class="spinner" role="status" aria-label="Loading products"></div>`;
-      productsContainer.setAttribute('aria-busy', 'true');
+      productsContainer.innerHTML = `<div class="spinner"></div>`;
 
       const localProducts = loadProductsFromLocal();
       if (localProducts && localProducts.length) {
         products = localProducts;
         renderProducts();
         productsContainer.classList.remove('loading');
-        productsContainer.removeAttribute('aria-busy');
         return;
       }
 
       try {
         const res = await fetch('https://fakestoreapi.com/products');
-        if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
         products = await res.json();
-        saveProductsToLocal(); 
+        saveProductsToLocal();
         renderProducts();
-      } catch (error) {
-        productsContainer.classList.add('error');
-        productsContainer.innerHTML = 'Failed to load products. Please try again later.';
-        console.error(error);
+      } catch (err) {
+        productsContainer.innerHTML = 'Failed to load products.';
+        console.error(err);
       } finally {
         productsContainer.classList.remove('loading');
-        productsContainer.removeAttribute('aria-busy');
       }
     }
 
@@ -365,66 +350,61 @@
         productsContainer.innerHTML = '<p>No products found.</p>';
         return;
       }
+
       productsContainer.innerHTML = '';
       products.forEach(product => {
         const prod = document.createElement('article');
         prod.className = 'product';
-        prod.tabIndex = 0;
         prod.innerHTML = `
-          <img src="${product.image}" alt="Image of ${product.title}" loading="lazy" width="140" height="140" />
+          <img src="${product.image}" alt="${product.title}" />
           <h3>${product.title}</h3>
           <p class="price">$${product.price.toFixed(2)}</p>
           <p>${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</p>
           <div class="actions">
-            <button class="edit" aria-label="Edit ${product.title}">Edit</button>
-            <button class="delete" aria-label="Delete ${product.title}">Delete</button>
+            <button class="edit">Edit</button>
+            <button class="delete">Delete</button>
           </div>
         `;
 
-        const editBtn = prod.querySelector('.edit');
-        editBtn.addEventListener('click', () => startEditProduct(product));
-
-        const deleteBtn = prod.querySelector('.delete');
-        deleteBtn.addEventListener('click', () => deleteProduct(product.id));
+        prod.querySelector('.edit').addEventListener('click', () => startEditProduct(product));
+        prod.querySelector('.delete').addEventListener('click', () => deleteProduct(product.id));
 
         productsContainer.appendChild(prod);
       });
     }
 
-    // CREATE or UPDATE on form submit
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       formError.textContent = '';
+
+      let imageData = '';
+      if (imageFileInput.files.length > 0) {
+        imageData = await fileToBase64(imageFileInput.files[0]);
+      } else {
+        imageData = imageUrlInput.value.trim();
+      }
 
       const productData = {
         title: form.title.value.trim(),
         price: parseFloat(form.price.value),
         description: form.description.value.trim(),
-        image: form.image.value.trim(),
+        image: imageData,
         category: form.category.value.trim(),
       };
 
-      if (
-        !productData.title ||
-        isNaN(productData.price) ||
-        !productData.description ||
-        !productData.image ||
-        !productData.category
-      ) {
-        formError.textContent = 'Please fill in all fields correctly.';
+      if (!productData.title || isNaN(productData.price) || !productData.description || !productData.image || !productData.category) {
+        formError.textContent = 'Please fill all fields correctly.';
         return;
       }
 
       submitBtn.disabled = true;
       submitBtn.textContent = editingProductId ? 'Updating...' : 'Adding...';
 
-
       if (editingProductId) {
-
-        products = products.map(p => (p.id === editingProductId ? { id: editingProductId, ...productData } : p));
+        products = products.map(p => p.id === editingProductId ? { id: editingProductId, ...productData } : p);
       } else {
         const newId = generateNewId();
-        products.push({ id: newId, ...productData });
+        products.unshift({ id: newId, ...productData });
       }
 
       saveProductsToLocal();
@@ -444,15 +424,17 @@
       form.title.value = product.title;
       form.price.value = product.price;
       form.description.value = product.description;
-      form.image.value = product.image;
       form.category.value = product.category;
-      formError.textContent = '';
-      form.title.focus();
+      imageUrlInput.value = product.image.startsWith('data:image') ? '' : product.image;
+      imageFileInput.value = '';
+      imageUrlInput.disabled = false;
+      imageFileInput.disabled = false;
+
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    cancelBtn.addEventListener('click', () => {
-      resetForm();
-    });
+
+    cancelBtn.addEventListener('click', resetForm);
 
     function resetForm() {
       editingProductId = null;
@@ -460,20 +442,19 @@
       formTitle.textContent = 'Add New Product';
       submitBtn.textContent = 'Add Product';
       cancelBtn.style.display = 'none';
+      imageFileInput.disabled = false;
+      imageUrlInput.disabled = false;
       formError.textContent = '';
     }
 
     function deleteProduct(id) {
       if (!confirm('Are you sure you want to delete this product?')) return;
-
       products = products.filter(p => p.id !== id);
       saveProductsToLocal();
       renderProducts();
-
       if (editingProductId === id) resetForm();
     }
 
-    // Initial load
     fetchProducts();
   </script>
 </body>
